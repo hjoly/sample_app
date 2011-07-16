@@ -1,18 +1,22 @@
 SampleApp::Application.routes.draw do
+  resources :users  
+
+  match '/signup', :to => 'users#new' 
+
   get "users/new"
 
   root :to => 'pages#home'
-  
+
   #matches '/about' and routes it to the 'about' action in the Pages controller.
   # also it creates named routes for use in the controllers and views:
   #  about_patch => '/about'
   #  about_url => 'http://localhost:3000/about'
   match '/about', :to => 'pages#about'
-  
+
   match '/signup', :to => 'users#new'
 
   match '/contact', :to => 'pages#contact'
-  
+
   match '/help', :to => 'pages#help'
 
   # The priority is based upon order of creation:
