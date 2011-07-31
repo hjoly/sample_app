@@ -13,8 +13,6 @@ SampleApp::Application.routes.draw do
   #  about_url => 'http://localhost:3000/about'
   match '/about', :to => 'pages#about'
 
-  match '/signup', :to => 'users#new'
-
   match '/contact', :to => 'pages#contact'
 
   match '/help', :to => 'pages#help'
