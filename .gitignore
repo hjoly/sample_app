@@ -10,3 +10,4 @@ doc/
 *~
 .project
 .DS_Store
+app/.DS_Store
