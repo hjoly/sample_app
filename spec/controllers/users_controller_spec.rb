@@ -53,6 +53,23 @@ describe UsersController do
         response.should have_selector("a", :href => "/users?page=2",
                                            :content => "Next")
       end
+
+      it "shouldn't show 'delete' link for non-admins" do
+        get :index
+        @users.each do |user|
+          response.should_not have_selector("a", :content => "Delete #{user.name}")
+        end
+      end
+
+      it "should show 'delete' link for admins" do
+        admin = Factory(:user, :email => "admin@example.com", :admin => true)
+        test_sign_in(admin)
+
+        get :index
+        @users.each do |user|
+          response.should_not have_selector("a", :content => "Delete #{user.name}")
+        end
+      end
     end
   end
 
@@ -138,6 +155,12 @@ describe UsersController do
       get :new
       response.should have_selector("input[name='user[password_confirmation]'][type='password']")
     end
+
+    it "should not be accessible to signed in users" do
+      @user = test_sign_in(Factory(:user))
+      get :new
+      response.should redirect_to(root_path)
+    end
   end
 
 
@@ -164,6 +187,12 @@ describe UsersController do
       it "should render the 'new' page" do
         post :create, :user => @attr
         response.should render_template('new')
+      end
+
+      it "should not be accessible to signed in users" do
+        @user = test_sign_in(Factory(:user))
+        post :create, :user => @attr
+        response.should redirect_to(root_path)
       end
     end
 
@@ -337,8 +366,14 @@ describe UsersController do
     describe "as an admin user" do
 
       before(:each) do
-        admin = Factory(:user, :email => "admin@example.com", :admin => true)
-        test_sign_in(admin)
+        @admin = Factory(:user, :email => "admin@example.com", :admin => true)
+        test_sign_in(@admin)
+      end
+
+      it "shouldn't be able to destroy himself" do
+        lambda do
+          delete :destroy, :id => @admin
+        end.should_not change(User, :count)
       end
 
       it "should destroy the user" do
