@@ -1,11 +1,17 @@
 class UsersController < ApplicationController
-  before_filter :authenticate,   :only => [:index, :edit, :update, :destroy]
+  before_filter :authenticate, :except => [:show, :new, :create]
   before_filter :correct_user,   :only => [:edit, :update]
   before_filter :admin_user,     :only => :destroy
-  before_filter :signed_in_user, :only => [:new, :create]
+  before_filter :signed_in_user, :only => [:new, :create] # Only on my version.
 
-  def show 
-    @user = User.find(params[:id]) 
+  def index
+    @users = User.paginate(:page => params[:page])
+    @title = "All users"
+  end
+
+  def show
+    @user = User.find(params[:id])
+    @microposts = @user.microposts.paginate(:page => params[:page])
     @title = @user.name
   end
 
@@ -18,8 +24,7 @@ class UsersController < ApplicationController
     @user = User.new(params[:user])
     if @user.save
       sign_in @user
-      flash[:success] = "Welcome to the Sample App!"
-      redirect_to @user
+      redirect_to @user, :flash => { :success => "Welcome to the Sample App!" }
     else
       @title = "Sign up"
       @user.password = ""
@@ -36,22 +41,11 @@ class UsersController < ApplicationController
   def update
     # @user is initialized from the correct_user via before filter.
     if @user.update_attributes(params[:user])
-      flash[:success] = "Profile updated."
-      redirect_to @user
+      redirect_to @user, :flash => { :success => "Profile updated." }
     else 
       @title = "Edit user"
       render 'edit'
     end 
-  end
-
-  def index
-    @title = "All users"
-    @users = User.paginate(:page => params[:page])
-  end
-
-  def show
-    @user = User.find(params[:id])
-    @title = @user.name
   end
 
   def destroy
@@ -64,10 +58,6 @@ class UsersController < ApplicationController
   end
 
   private
-
-    def authenticate
-      deny_access unless signed_in?
-    end
 
     def correct_user
       @user = User.find(params[:id])
