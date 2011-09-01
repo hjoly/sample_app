@@ -27,6 +27,10 @@ module SessionsHelper
     self.current_user = nil
   end
 
+  def authenticate
+    deny_access unless signed_in?
+  end
+
   def deny_access
     # Remember the page to which the user was trying to access
     store_location

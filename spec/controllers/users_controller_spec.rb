@@ -103,6 +103,96 @@ describe UsersController do
       get :show, :id => @user
       response.should have_selector("h1>img", :class => "gravatar")
     end
+
+    it "should have zero micropost" do
+      get :show, :id => @user
+      response.should have_selector("td", :class => "sidebar round", :content => "Microposts 0")
+    end
+
+    describe "with 2 microposts" do
+
+      before(:each) do
+        @mp1 = Factory(:micropost, :user => @user, :content => "Foo bar")
+        @mp2 = Factory(:micropost, :user => @user, :content => "Baz quux")
+      end
+
+      it "should display the correct number of microposts" do
+        get :show, :id => @user
+        response.should have_selector("td", :class => "sidebar round", :content => "Microposts 2")
+      end
+
+      it "should show the user's microposts" do
+        get :show, :id => @user
+        response.should have_selector("span.content", :content => @mp1.content)
+        response.should have_selector("span.content", :content => @mp2.content)
+      end
+
+      it "should not be any pagination" do
+        get :show, :id => @user
+        response.should_not have_selector("div", :class => "pagination")
+      end
+
+      it "should not display a 'delete' link for the micropost of a user not signed_in" do
+        get :show, :id => @user
+        response.should_not have_selector("a", :content => "delete")
+      end
+    end
+
+    describe "with 30 microposts" do
+      before(:each) do
+        @mp = []
+        (0..29).each { |i| @mp << Factory(:micropost, :user => @user, :content => "Lorem ipsum #{i}") }
+      end
+
+      it "there should not be any pagination" do
+        get :show, :id => @user
+        response.should_not have_selector("div", :class => "pagination")
+      end
+
+      describe "plus one" do
+        before(:each) do
+          mp31 = Factory(:micropost, :user => @user, :content => "Lorem ipsum 31")
+        end
+          
+        it "there should be a pagination" do
+          get :show, :id => @user
+          response.should have_selector("div", :class => "pagination")
+        end      
+          
+        it "we should be in page one" do
+          get :show, :id => @user
+          response.should have_selector("em.current", :content => "1")
+        end      
+          
+        it "in page one, the 'previous page' link should be deactivated" do
+          get :show, :id => @user
+          response.should have_selector("span", :class => "previous_page disabled")
+        end      
+          
+        it "in page one, the 'next page' link should be activated" do
+          get :show, :id => @user
+          response.should have_selector("a", :class => "next_page")
+        end      
+          
+        # it "clicking on 'next' should bring to page two" do
+        #   get :show, :id => @user
+        #   click_link "2"
+        #   response.should have_selector("em.current", :content => "2")
+        # end      
+      end
+    end
+
+    describe "for a signed-up user" do
+      before(:each) do
+        test_sign_in(@user)
+        @mp1 = Factory(:micropost, :user => @user, :content => "Foo bar")
+      end
+
+      it "should display a 'delete' link for the micropost" do
+        get :show, :id => @user
+        response.should have_selector("a", :content => "delete")
+      end
+    end
   end
 
   describe "GET 'new'" do

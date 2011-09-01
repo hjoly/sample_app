@@ -8,6 +8,7 @@ tmp/
 doc/
 *.swp
 *~
+*#
 .project
 .DS_Store
 app/.DS_Store
