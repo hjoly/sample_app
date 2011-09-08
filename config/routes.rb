@@ -1,21 +1,29 @@
 SampleApp::Application.routes.draw do
   get "sessions/new"
 
-  resources :microposts, :only => [:create, :destroy]
-
-  resources :users do
-    resources :microposts, :only => [:create, :index, :destroy]
-  end
-
-  match '/signup', :to => 'users#new' 
-  # Might not be required
-  get "users/new"
-
-
   resources :sessions, :only => [:new, :create, :destroy]
 
   match '/signin', :to => 'sessions#new'
   match '/signout', :to => 'sessions#destroy'
+
+  resources :microposts, :only => [:create, :destroy]
+
+  resources :relationships, :only => [:create, :destroy]
+
+  resources :users do
+    resources :microposts, :only => [:create, :index, :destroy]
+
+    member do
+      # Will recognize /users/1/{following|followers} with GET & routes it to "UsersController#{following|followers}"
+      # Will create (among other things) the following named route-helpers: {following|followers}_user_path
+      get :following, :followers
+    end
+  end
+
+  match '/signup', :to => 'users#new' 
+  # Might not be required
+  # get "users/new"
+
 
 
   root :to => 'pages#home'

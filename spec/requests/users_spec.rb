@@ -9,6 +9,7 @@ describe "Users" do
       it "should not make a new user" do
         lambda do
           visit signup_path
+          # Can also use CSS id like: "fill_in :user_name ..." (here "user_name" is the CSS id of that field)
 	  fill_in "Name",		:with => ""
 	  fill_in "Email",		:with => ""
 	  fill_in "Password",		:with => ""

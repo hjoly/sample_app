@@ -5,6 +5,19 @@ class User < ActiveRecord::Base
 
   has_many :microposts, :dependent => :destroy
 
+  # The following pair defines a 'following' relation: the list of users beeing followed by this user.
+  # The class_name is implicit (Relationship), foreign_key (Relationship.followed_id points to myself)
+  has_many :relationships, :foreign_key => "follower_id", :dependent => :destroy
+  # The target of the relation: 
+  # following (= someone we're following), through (via the relationship class), source (relationship.followed)
+  has_many :following, :through => :relationships, :source => :followed
+
+  # The following pair defines a 'followers' relation: the users that follow this user.
+  has_many :reverse_relationships, :foreign_key => "followed_id",
+                                   :class_name => "Relationship",
+                                   :dependent => :destroy
+  has_many :followers, :through => :reverse_relationships, :source => :follower
+
   validates :name,  :presence => true,
                     :length => { :maximum => 50 }
 
@@ -37,9 +50,20 @@ class User < ActiveRecord::Base
     (user && user.salt == cookie_salt) ? user : nil
   end
 
+  def following?(followed)
+    relationships.find_by_followed_id(followed)
+  end
+
+  def follow!(followed)
+    relationships.create!(:followed_id => followed.id)
+  end
+
+  def unfollow!(followed)
+    relationships.find_by_followed_id(followed).destroy
+  end
+
   def feed
-    # This is preliminary. See Chapter 12 for the full implementation.
-    Micropost.where("user_id = ?", id)
+    Micropost.from_users_followed_by(self)
   end
 
   private
