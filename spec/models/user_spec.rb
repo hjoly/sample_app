@@ -243,6 +243,22 @@ describe User do
       @user.should_not be_following(@followed)
     end
 
+    it "The destruction of follower should destroy associated following-follower" do
+      @user.follow!(@followed)
+      user_id = @user.id
+      @user.destroy
+      Relationship.find_by_followed_id(@followed.id).should be_nil
+      Relationship.find_by_follower_id(user_id).should be_nil
+    end
+
+    it "The destruction of followed should destroy associated following-follower" do
+      @user.follow!(@followed)
+      followed_id = @followed.id
+      @followed.destroy
+      Relationship.find_by_followed_id(followed_id).should be_nil
+      Relationship.find_by_follower_id(@user.id).should be_nil
+    end
+
     it "should have a reverse_relationships method" do
       @user.should respond_to(:reverse_relationships)
     end

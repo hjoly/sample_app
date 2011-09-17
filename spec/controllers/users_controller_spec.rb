@@ -185,12 +185,22 @@ describe UsersController do
     describe "for a signed-up user" do
       before(:each) do
         test_sign_in(@user)
-        @mp1 = Factory(:micropost, :user => @user, :content => "Foo bar")
       end
 
       it "should display a 'delete' link for the micropost" do
+        @mp1 = Factory(:micropost, :user => @user, :content => "Foo bar")
         get :show, :id => @user
         response.should have_selector("a", :content => "delete")
+      end
+
+      it "should have the right follower/following counts" do
+        other_user = Factory(:user, :email => Factory.next(:email))
+        other_user.follow!(@user)
+        get :show, :id => @user
+        response.should have_selector("a", :href => following_user_path(@user),
+                                      :content => "0 following")
+        response.should have_selector("a", :href => followers_user_path(@user),
+                                      :content => "1 follower")
       end
     end
   end

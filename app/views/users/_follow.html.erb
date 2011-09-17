@@ -1,4 +1,6 @@
-<!-- ":remote => true", tells Rails to allow the form to be handled by javascript. -->
+<!-- The following produces HTML of the form:
+     <input id="relationship_followed_id" name="relationship[followed_id]" type="hidden" value="3" />
+     ":remote => true", tells Rails to allow the form to be handled by javascript. -->
 <%= form_for current_user.relationships.build(:followed_id => @user.id),
              :remote => true,
              do |f| %>

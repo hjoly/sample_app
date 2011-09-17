@@ -4,7 +4,7 @@ describe "Users" do
 
   describe "signup" do
 
-    describe "failure" do
+    describe "failure:" do
 
       it "should not make a new user" do
         lambda do
@@ -21,7 +21,7 @@ describe "Users" do
       end 
     end
 
-    describe "success" do
+    describe "success:" do
 
       it "should make a new user" do
         lambda do
@@ -41,7 +41,7 @@ describe "Users" do
 
   describe "sign in/out" do
 
-    describe "failure" do
+    describe "failure:" do
       it "should not sign a user in" do
         visit signin_path
         empty_user = User.new()
@@ -50,13 +50,59 @@ describe "Users" do
       end
     end
 
-    describe "success" do
+    describe "success:" do
       it "should sign a user in and out" do
         user = Factory(:user)
         integration_sign_in(user)
         controller.should be_signed_in
         click_link "Sign out"
         controller.should_not be_signed_in
+      end
+    end
+  end
+
+  describe "follow/unfollow a user" do
+
+    before(:each) do
+      @user = Factory(:user)
+      integration_sign_in(@user)
+
+      @not_followed = Factory(:user, :name => "Not Followed", :email => "another@example.com")
+
+      @followed = Factory(:user, :name => "Followed", :email => "another@example.net")
+      @user.follow!(@followed)
+
+      visit users_path
+    end
+
+    describe "failure:" do
+      it "should not be able to follow/unfollow himself" do
+        click_link "#{@user.name}"
+        response.should_not have_selector("input", :id => "relationship_submit", :value => "Follow")
+        response.should_not have_selector("input", :id => "relationship_submit", :value => "Unfollow")
+      end
+
+      it "should not be able to follow a user already followed" do
+        click_link "Followed"
+        response.should_not have_selector("input", :id => "relationship_submit", :value => "Follow")
+      end
+
+      it "should not be able to unfollow a user who is not followed yet" do
+        click_link "Not Followed"
+        response.should_not have_selector("input", :id => "relationship_submit", :value => "Unfollow")
+      end
+    end
+
+    describe "success:" do
+      it "should follow another user who is not followed yet" do
+        visit users_path
+        click_link "Not Followed"
+        response.should have_selector("input", :id => "relationship_submit", :value => "Follow")
+      end
+
+      it "should unfollow another user already followed" do
+        click_link "Followed"
+        response.should have_selector("input", :id => "relationship_submit", :value => "Unfollow")
       end
     end
   end

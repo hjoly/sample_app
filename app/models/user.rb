@@ -6,7 +6,7 @@ class User < ActiveRecord::Base
   has_many :microposts, :dependent => :destroy
 
   # The following pair defines a 'following' relation: the list of users beeing followed by this user.
-  # The class_name is implicit (Relationship), foreign_key (Relationship.followed_id points to myself)
+  # The class_name is implicit (Relationship), foreign_key (Relationship.follower_id points to myself)
   has_many :relationships, :foreign_key => "follower_id", :dependent => :destroy
   # The target of the relation: 
   # following (= someone we're following), through (via the relationship class), source (relationship.followed)
